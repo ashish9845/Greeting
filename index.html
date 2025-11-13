@@ -168,7 +168,7 @@
             animation: waveColorShift 8s linear infinite;
         }
 
-        /* --- Icon Color Animation Keyframes (For Social Icons) --- */
+        /* --- Icon Color Animation Keyframes (For Social Icons) */
         @keyframes iconColorCycle {
             0% {
                 color: #106AFF;
@@ -393,11 +393,10 @@
 
         // --- Quotes Data and State ---
 
-        // New constant for the pause time: 2500ms (2.5 seconds) after typing finishes.
+        // Pause time after typing completes (2.5 seconds)
         const QUOTE_PAUSE_TIME_MS = 2500;
 
         const QUOTES = [
-            // Original Quotes
             { content: "The journey of a thousand miles begins with one step.", author: "Lao Tzu" },
             { content: "Believe you can and you're halfway there.", author: "Theodore Roosevelt" },
             { content: "The only way to do great work is to love what you do.", author: "Steve Jobs" },
@@ -406,7 +405,6 @@
             { content: "The best time to plant a tree was 20 years ago. The second best time is now.", author: "Chinese Proverb" },
             { content: "Be yourself; everyone else is already taken.", author: "Oscar Wilde" },
             { content: "In the middle of difficulty lies opportunity.", author: "Albert Einstein" },
-            // New Quotes added by user
             { content: "It always seems impossible until it’s done.", author: "Nelson Mandela" },
             { content: "Don’t watch the clock; do what it does. Keep going.", author: "Sam Levenson" },
             { content: "You miss 100% of the shots you don’t take.", author: "Wayne Gretzky" },
@@ -417,7 +415,7 @@
             { content: "Dream big and dare to fail.", author: "Norman Vaughan" }
         ];
 
-        let quoteInterval = null; // Now holds the ID for recursive setTimeout
+        let quoteInterval = null; // Holds the ID for recursive setTimeout
         let currentTypingTimeout = null; // Tracks the active typewriter timeout
 
         /**
@@ -432,16 +430,12 @@
 
         /**
          * Simulates a typewriter effect by typing text character by character.
-         * @param {string} text - The text to type.
-         * @param {HTMLElement} element - The element to output the text to.
-         * @param {number} speed - Typing speed in ms per character.
-         * @param {function} callback - Function to execute when typing is complete.
          */
         function typeWriter(text, element, speed = 40, callback = () => { }) {
             let i = 0;
             element.textContent = ''; // Clear existing text
 
-            // Clear any previous typewriter timeout before starting a new one (Bug 2 safety)
+            // Clear any previous typewriter timeout before starting a new one
             if (currentTypingTimeout) {
                 clearTimeout(currentTypingTimeout);
             }
@@ -460,27 +454,23 @@
         }
 
         /**
-         * Displays the next quote with the typewriter effect and manages the author fade-in,
-         * then schedules the next quote after QUOTE_PAUSE_TIME_MS.
+         * Displays the next quote and schedules the subsequent one recursively.
          */
         function displayNextQuote() {
             // Reset author visibility and content
             quoteAuthorEl.style.opacity = '0';
             quoteAuthorEl.textContent = '';
 
-            // Clear any ongoing typing before starting new one (important for Bug 2 fix)
+            // Clear any ongoing typing or pending quote interval
             if (currentTypingTimeout) {
                 clearTimeout(currentTypingTimeout);
                 currentTypingTimeout = null;
             }
-
-            // Clear any existing recursive timeout before starting a new cycle
             if (quoteInterval) {
                 clearTimeout(quoteInterval);
                 quoteInterval = null;
             }
 
-            // Use the new random function
             const quote = getRandomQuote();
 
             // 1. Type out the quote content
@@ -522,68 +512,52 @@
             }
             // Clear text and author when stopping
             quoteTextEl.textContent = 'Click Namaste to start the quotes...';
-            quoteAuthorEl.textContent = '';
             quoteAuthorEl.style.opacity = '0';
         }
 
 
-        // --- Greeting Animation Logic ---
+        // --- Greeting Animation Logic (No Change) ---
 
         /**
          * Toggles the 'shrunk' class to smoothly move the greeting, time, and date elements.
          */
         function animateGreetingAndTime() {
-            // Determine if we are starting the shrinking animation (showing the quotes)
             const isShrinking = !greetingTextEl.classList.contains('shrunk');
 
-            // Toggle classes for Namaste, Time, and English Dates (standard toggle)
             greetingTextEl.classList.toggle('shrunk');
             timeEl.classList.toggle('shrunk');
             englishDateEl.classList.toggle('shrunk');
             englishWeekdayEl.classList.toggle('shrunk');
 
             if (isShrinking) {
-                // START SHRINKING (Forward Animation)
-
-                // 1. Start the quote rotation
                 startQuoteRotation();
 
-                // 2. Make the quote container visible immediately (still transparent)
                 quoteContainerEl.classList.remove('hidden');
-
-                // 3. Start fade-in transition after a slight delay
                 setTimeout(() => {
                     quoteContainerEl.classList.add('visible');
                 }, 50);
 
-                // 4. Nepali date sequence
                 nepaliDateEl.classList.remove('shrunk-reverse');
                 nepaliDateEl.classList.add('shrunk-sequence');
                 nepaliDateEl.style.transform = '';
                 nepaliDateEl.style.opacity = '';
 
             } else {
-                // START EXPANDING (Reverse Animation)
-
-                // 1. Stop the quote rotation
                 stopQuoteRotation();
 
-                // 2. Start fade-out immediately
                 quoteContainerEl.classList.remove('visible');
 
-                // 3. After the fade-out duration (0.5s), hide it from the document flow
                 setTimeout(() => {
                     quoteContainerEl.classList.add('hidden');
                 }, 550);
 
-                // 4. Nepali date sequence
                 nepaliDateEl.classList.remove('shrunk-sequence');
                 nepaliDateEl.classList.add('shrunk-reverse');
 
                 nepaliDateEl.addEventListener('animationend', function handler(e) {
                     if (e.animationName === 'nepali-date-reverse') {
                         nepaliDateEl.classList.remove('shrunk-reverse');
-                        nepaliDateEl.style.transform = 'translateY(0)'; // Explicitly reset to original position
+                        nepaliDateEl.style.transform = 'translateY(0)';
                         nepaliDateEl.style.opacity = '1';
                         nepaliDateEl.removeEventListener('animationend', handler);
                     }
@@ -594,13 +568,11 @@
         // --- Author Slide Animation Logic (No change) ---
         function slideAwayAuthor() {
             if (authorCreditEl.classList.contains('slide-moved')) {
-                // State 2: Move back
                 socialIconsEl.classList.remove('icon-visible');
                 socialIconsEl.style.pointerEvents = 'none';
                 authorCreditEl.style.transform = '';
                 authorCreditEl.classList.remove('slide-moved');
             } else {
-                // State 1: Move to the left corner and reveal icons
                 const currentRightPosition = authorCreditEl.getBoundingClientRect().right;
                 const elementWidth = authorCreditEl.offsetWidth;
                 const targetLeftPosition = 16;
@@ -610,15 +582,14 @@
                 authorCreditEl.style.transform = `translateX(${dx}px)`;
                 authorCreditEl.classList.add('slide-moved');
 
-                // Start the timer to show the social icons halfway through the slide
                 setTimeout(() => {
                     socialIconsEl.classList.add('icon-visible');
-                    socialIconsEl.style.pointerEvents = 'auto'; // Enable clicks for icons
+                    socialIconsEl.style.pointerEvents = 'auto';
                 }, 500);
             }
         }
 
-        // --- Clock and Date Logic (No change) ---
+        // --- Clock and Date Logic ---
 
         /**
          * Converts the 24-hour format time components to a 12-hour formatted string.
@@ -632,13 +603,19 @@
             hours = hours % 12;
             hours = hours ? hours : 12; // The hour '0' should be '12'
 
+            // Pad the hour string
             const hoursStr = String(hours).padStart(2, '0');
 
             return `${hoursStr}:${minutes}:${seconds} ${ampm}`;
         }
 
-        // Function to update time
+        /**
+         * Function to update time, called every second.
+         */
         function updateTime() {
+            // DEBUG: Confirm the interval is firing
+            // console.log("Time updating...");
+
             const now = new Date();
             timeEl.textContent = formatTime(now);
         }
@@ -647,14 +624,11 @@
         function updateDates() {
             const now = new Date();
 
-            // English Weekday
             const weekdayOptions = {
                 weekday: 'long'
             };
             englishWeekdayEl.textContent = now.toLocaleDateString('en-US', weekdayOptions);
 
-
-            // English Date: Month, Day, Year.
             const englishOptions = {
                 year: 'numeric',
                 month: 'short',
@@ -682,33 +656,76 @@
          */
         function handleVisibilityChange() {
             if (document.hidden) {
-                // Tab is hidden: Clear the typewriter timeout to prevent rapid catch-up on return.
                 if (currentTypingTimeout) {
                     clearTimeout(currentTypingTimeout);
                     currentTypingTimeout = null;
                 }
             } else {
-                // Tab is visible: If the quotes are supposed to be active, restart the rotation for a clean start.
                 if (greetingTextEl.classList.contains('shrunk')) {
-                    // Restarting quote rotation guarantees a clean start for the next quote display
                     startQuoteRotation();
                 }
             }
         }
 
-        // --- Initialization ---
-
-        window.onload = function () {
+        /**
+         * Initializes and starts the clock and date intervals.
+         */
+        function startClockAndDates() {
             // Call functions immediately to load data
             updateTime();
             updateDates();
 
             // Set intervals
             setInterval(updateTime, 1000);
+            // Dates only need to update every minute
             setInterval(updateDates, 60000);
 
             // Add visibility listener for tab switching bug fix
             document.addEventListener('visibilitychange', handleVisibilityChange);
+        }
+
+        // --- Console Logging Function ---
+
+        // The time this file was last edited (2025/11/13, 7:53 PM)
+        const LAST_UPDATED_TIMESTAMP_STRING = "2025-11-13T19:53:00";
+
+        /**
+         * Logs the last updated timestamp to the console in the format YYYY/MM/DD-HH:MM AM/PM.
+         */
+        function logLastUpdated() {
+            const date = new Date(LAST_UPDATED_TIMESTAMP_STRING);
+
+            if (isNaN(date.getTime())) {
+                console.error("Could not parse last updated timestamp.");
+                return;
+            }
+
+            const year = date.getFullYear();
+            const month = String(date.getMonth() + 1).padStart(2, '0');
+            const day = String(date.getDate()).padStart(2, '0');
+            const datePart = `${year}/${month}/${day}`;
+
+            let hours = date.getHours();
+            const minutes = String(date.getMinutes()).padStart(2, '0');
+            const ampm = hours >= 12 ? 'PM' : 'AM';
+
+            hours = hours % 12;
+            hours = hours ? hours : 12;
+            const hoursStr = String(hours).padStart(2, '0');
+
+            const timePart = `${hoursStr}:${minutes} ${ampm}`;
+
+            console.log(`Page Last Updated: ${datePart}-${timePart}`);
+        }
+
+        // --- Initialization ---
+
+        window.onload = function () {
+            // Start the clock and date intervals
+            startClockAndDates();
+
+            // Log the update time to the console
+            logLastUpdated();
         };
 
         // Expose functions globally for HTML onclick
