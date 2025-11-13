@@ -61,15 +61,26 @@
             font-size: 2rem;
             /* FIX: Absolute positioning relative to <body> (viewport) for guaranteed separation */
             position: absolute;
-            bottom: 5%;
-            /* Pushed near the bottom edge */
+            /* Default bottom position for medium screens and up */
+            bottom: 4rem;
             left: 50%;
             transform: translateX(-50%);
             margin-top: 0;
             /* Override the default margin */
         }
 
-        /* English dates slide out/up and fade */
+        /* FIX for mobile overlap: Increase bottom position and reduce font size */
+        @media (max-width: 639px) {
+
+            /* Screens smaller than Tailwind 'sm' breakpoint */
+            #time.shrunk {
+                font-size: 1.5rem;
+                /* IMPORTANT FIX: Pushes the time up significantly to clear the author text/icons */
+                bottom: 9rem;
+            }
+        }
+
+        /* English dates slide out/up and fade (Container remains in place) */
         #english-date,
         #english-weekday {
             /* Apply transition to both transform and opacity */
@@ -83,63 +94,61 @@
             opacity: 0;
         }
 
-        /* --- NEPALI DATE SEQUENTIAL ANIMATION (FORWARD: Out-Snap-In) --- */
-        @keyframes nepali-date-sequence {
-            0% {
-                transform: translateY(0);
-                opacity: 1;
-            }
+        /* --- NEPALI DATE STYLING --- */
 
-            /* Make the initial exit faster (0.2 seconds) */
-            10% {
-                transform: translateY(-100vh);
-                opacity: 0;
-            }
-
-            /* Instantly snap to bottom off-screen */
-            11% {
-                transform: translateY(100vh);
-                opacity: 0;
-            }
-
-            100% {
-                /* Final position: Now moved 70vh down from its original top position, placing it just above the time */
-                transform: translateY(70vh);
-                opacity: 1;
-            }
-        }
-
-        /* --- NEPALI DATE REVERSE ANIMATION (BACKWARD: Smooth Return) --- */
-        @keyframes nepali-date-reverse {
-            0% {
-                /* Start at the final 'shrunk' position (70vh down) */
-                transform: translateY(70vh);
-                opacity: 1;
-            }
-
-            100% {
-                /* End at the original top position (0vh down) */
-                transform: translateY(0);
-                opacity: 1;
-            }
-        }
-
+        /* Explicitly define the initial absolute position for smooth transition */
         #nepali-date {
-            /* Remove default transition to let keyframes control movement */
-            transition: none;
-            /* Ensure it is centered within its parent container */
+            /* Set initial position to be AT THE VERY TOP (New primary date) */
+            position: absolute;
+            top: 2rem;
+            /* Mobile: 2rem (32px) from top */
+            left: 50%;
+            transform: translateX(-50%);
+            /* Crucial: Uses 'all' transition to animate the change from 'top' */
+            transition: all 1s ease-in-out;
             display: block;
-            margin: 0 auto;
+            margin: 0;
         }
 
+        /* Adjust initial top position for screens >= sm */
+        @media (min-width: 640px) {
+            #nepali-date {
+                top: 3rem;
+                /* Desktop/Tablet: 3rem (48px) from top */
+            }
+        }
+
+        /* FIX: Target position for the Nepali date when shrunk, now calculated using 'top' */
         #nepali-date.shrunk-sequence {
-            /* Total duration is 2s (1s for out, 1s for in) */
-            animation: nepali-date-sequence 2s ease-in-out forwards;
+            /* INCREASED GAP: Now 10rem from the bottom (6rem above the 4rem clock) for desktop/tablet */
+            top: calc(100vh - 10rem);
         }
 
-        #nepali-date.shrunk-reverse {
-            /* Simple 1s smooth movement back to the top */
-            animation: nepali-date-reverse 1s ease-in-out forwards;
+        /* Mobile adjustment */
+        @media (max-width: 639px) {
+            #nepali-date.shrunk-sequence {
+                /* INCREASED GAP: Now 15rem from the bottom (6rem above the 9rem clock) for mobile */
+                top: calc(100vh - 15rem);
+            }
+        }
+
+        /* English Date and Weekday Container Positioning (NEW STARTING POSITION BELOW NEPALI DATE) */
+        #english-date-container {
+            /* Mobile: Start below Nepali date */
+            top: 5rem;
+            transition: all 1s ease-in-out;
+            /* Add transition for smooth move */
+            position: absolute;
+            /* Needs to be absolute to control 'top' */
+            left: 50%;
+            transform: translatex(-50%);
+        }
+
+        @media (min-width: 640px) {
+            #english-date-container {
+                /* Desktop/Tablet: Start below Nepali date */
+                top: 6rem;
+            }
         }
 
 
@@ -262,10 +271,9 @@
             opacity: 0;
             transition: opacity 0.5s ease-in-out;
             max-width: 90vw;
-            width: 500px;
-            /* Increased width for more horizontal space */
+            /* Ensures it never exceeds 90% of mobile width */
+            /* Removed fixed width: 500px to rely on w-full and md:max-w-lg classes below for responsiveness */
             min-height: 250px;
-            /* Increased min-height for longer quotes */
             padding: 1.5rem;
             border: 2px solid #4D4943;
             border-radius: 1rem;
@@ -356,9 +364,13 @@
         </a>
     </div>
 
-    <!-- Date Container (Upper Middle Center) -->
-    <div class="absolute top-8 left-1/2 transform -translate-x-1/2 text-center sm:top-12 px-4">
-        <p id="nepali-date" class="text-xl sm:text-2xl font-semibold"></p>
+    <!-- NEW: Nepali date element is now outside the group for independent positioning -->
+    <p id="nepali-date" class="text-lg sm:text-xl md:text-2xl font-semibold"></p>
+
+    <!-- English Date and Weekday Container (Top) -->
+    <!-- Positioning for this container is handled in the style block based on Nepali Date's position -->
+    <div id="english-date-container" class="absolute left-1/2 transform -translate-x-1/2 text-center px-4">
+        <!-- The English dates are still here, but they only fade out/up -->
         <p id="english-date" class="text-lg sm:text-xl font-medium opacity-80 mt-1"></p>
         <p id="english-weekday" class="text-base sm:text-lg font-normal opacity-80 mt-1"></p>
     </div>
@@ -368,7 +380,7 @@
         <h1 id="greeting-text" class="text-7xl sm:text-8xl font-bold" onclick="animateGreetingAndTime()">Namaste 🙏</h1>
 
         <!-- Quote Container (Now positioned absolutely for centering) -->
-        <div id="quote-container" class="flex flex-col items-center justify-center hidden">
+        <div id="quote-container" class="flex flex-col items-center justify-center hidden w-full md:max-w-lg">
             <p id="quote-text" class="text-xl sm:text-2xl font-normal italic mb-4 text-gray-200">Click Namaste to start
                 the quotes...</p>
             <p id="quote-author" class="text-lg font-medium text-gray-500 opacity-0">- </p>
@@ -390,6 +402,7 @@
         const quoteContainerEl = document.getElementById('quote-container'); // Quote Container
         const quoteTextEl = document.getElementById('quote-text'); // Quote Text element
         const quoteAuthorEl = document.getElementById('quote-author'); // Quote Author element
+        const englishDateContainerEl = document.getElementById('english-date-container'); // NEW: English Date Container
 
         // --- Quotes Data and State ---
 
@@ -516,7 +529,7 @@
         }
 
 
-        // --- Greeting Animation Logic (No Change) ---
+        // --- Greeting Animation Logic ---
 
         /**
          * Toggles the 'shrunk' class to smoothly move the greeting, time, and date elements.
@@ -526,6 +539,9 @@
 
             greetingTextEl.classList.toggle('shrunk');
             timeEl.classList.toggle('shrunk');
+
+            // Toggle classes on the English dates container for the fade/slide effect
+            // English date elements themselves have the shrinking class applied for their transform/opacity
             englishDateEl.classList.toggle('shrunk');
             englishWeekdayEl.classList.toggle('shrunk');
 
@@ -537,10 +553,9 @@
                     quoteContainerEl.classList.add('visible');
                 }, 50);
 
-                nepaliDateEl.classList.remove('shrunk-reverse');
+                // Start the Nepali date transition by applying the target class
                 nepaliDateEl.classList.add('shrunk-sequence');
-                nepaliDateEl.style.transform = '';
-                nepaliDateEl.style.opacity = '';
+
 
             } else {
                 stopQuoteRotation();
@@ -551,17 +566,8 @@
                     quoteContainerEl.classList.add('hidden');
                 }, 550);
 
+                // Revert the Nepali date position
                 nepaliDateEl.classList.remove('shrunk-sequence');
-                nepaliDateEl.classList.add('shrunk-reverse');
-
-                nepaliDateEl.addEventListener('animationend', function handler(e) {
-                    if (e.animationName === 'nepali-date-reverse') {
-                        nepaliDateEl.classList.remove('shrunk-reverse');
-                        nepaliDateEl.style.transform = 'translateY(0)';
-                        nepaliDateEl.style.opacity = '1';
-                        nepaliDateEl.removeEventListener('animationend', handler);
-                    }
-                });
             }
         }
 
@@ -613,9 +619,6 @@
          * Function to update time, called every second.
          */
         function updateTime() {
-            // DEBUG: Confirm the interval is firing
-            // console.log("Time updating...");
-
             const now = new Date();
             timeEl.textContent = formatTime(now);
         }
@@ -686,8 +689,8 @@
 
         // --- Console Logging Function ---
 
-        // The time this file was last edited (2025/11/13, 7:53 PM)
-        const LAST_UPDATED_TIMESTAMP_STRING = "2025-11-13T19:53:00";
+        // The time this file was last edited (2025/11/13, 8:43 PM)
+        const LAST_UPDATED_TIMESTAMP_STRING = "2025-11-13T20:43:00";
 
         /**
          * Logs the last updated timestamp to the console in the format YYYY/MM/DD-HH:MM AM/PM.
