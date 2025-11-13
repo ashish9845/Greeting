@@ -41,24 +41,32 @@
 
         /* Custom style applied specifically to the time display */
         #time {
-            /* Updated transition to include font-size */
-            transition: transform 1s ease-in-out, font-size 1s ease-in-out;
+            /* Set initial vertical spacing (mt-6 equivalent) */
+            margin-top: 1.5rem;
+            /* Updated transition to cover all position and size changes */
+            transition: font-size 1s ease-in-out, transform 1s ease-in-out, bottom 1s ease-in-out, margin 1s ease-in-out;
         }
 
         /* --- STATE CLASS: Shrunk and Moved --- */
 
         /* When 'shrunk' class is applied to Namaste: move up by 150px, NO scaling */
         #greeting-text.shrunk {
-            /* This translation is relative to its new starting position near the top */
-            transform: translateY(-150px);
+            /* Adjusted translateY to move it higher up */
+            transform: translateY(-200px);
         }
 
-        /* When 'shrunk' class is applied to Time: move to the bottom center, NO scaling */
+        /* When 'shrunk' class is applied to Time: fix position and reduce font size */
         #time.shrunk {
-            /* Final position for time (30vh down from center) */
-            transform: translateY(30vh);
-            /* New: Reduce font size to roughly half (2rem = 32px) */
+            /* Now only reducing font size to roughly half (2rem = 32px) */
             font-size: 2rem;
+            /* FIX: Absolute positioning relative to <body> (viewport) for guaranteed separation */
+            position: absolute;
+            bottom: 5%;
+            /* Pushed near the bottom edge */
+            left: 50%;
+            transform: translateX(-50%);
+            margin-top: 0;
+            /* Override the default margin */
         }
 
         /* English dates slide out/up and fade */
@@ -76,11 +84,6 @@
         }
 
         /* --- NEPALI DATE SEQUENTIAL ANIMATION (FORWARD: Out-Snap-In) --- */
-
-        /* Keyframes for the two-stage movement: 
-           1. Moves up and out (0% to 10%) - Animated Exit
-           2. Instantly snaps to bottom (11%) - Instant Jump
-           3. Moves from bottom to final spot (12% to 100%) - Animated Arrival */
         @keyframes nepali-date-sequence {
             0% {
                 transform: translateY(0);
@@ -121,7 +124,6 @@
             }
         }
 
-
         #nepali-date {
             /* Remove default transition to let keyframes control movement */
             transition: none;
@@ -147,7 +149,6 @@
         }
 
         /* --- Text Color Animation Styles (For Author Name) --- */
-
         @keyframes waveColorShift {
             0% {
                 background-position: 0% 50%;
@@ -199,7 +200,6 @@
         }
 
         /* --- Slide Animation Styles (Author Name) */
-
         #author-credit {
             transition: transform 1s ease-out;
             cursor: pointer;
@@ -256,11 +256,63 @@
             opacity: 1;
             pointer-events: auto;
         }
+
+        /* --- Quote Container Styles --- */
+        #quote-container {
+            opacity: 0;
+            transition: opacity 0.5s ease-in-out;
+            max-width: 90vw;
+            width: 500px;
+            /* Increased width for more horizontal space */
+            min-height: 250px;
+            /* Increased min-height for longer quotes */
+            padding: 1.5rem;
+            border: 2px solid #4D4943;
+            border-radius: 1rem;
+            text-align: center;
+            z-index: 10;
+
+            /* Centering the box in the middle of the screen */
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            /* Centers the element itself */
+        }
+
+        #quote-container.visible {
+            opacity: 1;
+        }
+
+        /* --- Typewriter Styles --- */
+        /* Apply to the quote text element */
+        #quote-text {
+            /* Crucial for typewriter effect */
+            overflow: hidden;
+            /* Allow text to wrap naturally instead of nowrap */
+            white-space: normal;
+            /* Blinking cursor effect */
+            border-right: .15em solid #E6E1E5;
+            animation: blink-caret .75s step-end infinite;
+            max-width: 100%;
+        }
+
+        /* Redefine animation for cursor visibility */
+        @keyframes blink-caret {
+
+            from,
+            to {
+                border-color: transparent
+            }
+
+            50% {
+                border-color: #E6E1E5;
+            }
+        }
     </style>
 </head>
 
 <body class="h-screen w-full flex flex-col items-center justify-center relative overflow-hidden p-4">
-    <!-- Reverted: Added 'justify-center' back to center content vertically -->
 
     <!-- Custom Text (Bottom Right) -->
     <p id="author-credit" class="fixed bottom-6 right-4 text-3xl font-semibold author-color-animate author-rubik-fade"
@@ -313,10 +365,18 @@
 
     <!-- Main Content (Center) -->
     <main class="flex flex-col items-center justify-center text-center p-6 rounded-xl relative">
-        <!-- Reverted: Removed 'pt-24' and restored 'justify-center' -->
         <h1 id="greeting-text" class="text-7xl sm:text-8xl font-bold" onclick="animateGreetingAndTime()">Namaste 🙏</h1>
-        <p id="time" class="text-5xl sm:text-6xl mt-6 tabular-nums tracking-wider font-mono font-semibold"></p>
+
+        <!-- Quote Container (Now positioned absolutely for centering) -->
+        <div id="quote-container" class="flex flex-col items-center justify-center hidden">
+            <p id="quote-text" class="text-xl sm:text-2xl font-normal italic mb-4 text-gray-200">Click Namaste to start
+                the quotes...</p>
+            <p id="quote-author" class="text-lg font-medium text-gray-500 opacity-0">- </p>
+        </div>
     </main>
+
+    <!-- Time element moved outside <main> to allow absolute positioning relative to the body (viewport) when shrunk -->
+    <p id="time" class="text-5xl sm:text-6xl tabular-nums tracking-wider font-mono font-semibold"></p>
 
     <script>
         // Get elements
@@ -327,6 +387,105 @@
         const greetingTextEl = document.getElementById('greeting-text'); // H1 element
         const authorCreditEl = document.getElementById('author-credit'); // Author text element
         const socialIconsEl = document.getElementById('social-icons'); // Social icons container
+        const quoteContainerEl = document.getElementById('quote-container'); // Quote Container
+        const quoteTextEl = document.getElementById('quote-text'); // Quote Text element
+        const quoteAuthorEl = document.getElementById('quote-author'); // Quote Author element
+
+        // --- Quotes Data and State ---
+        const QUOTES = [
+            { content: "The journey of a thousand miles begins with one step.", author: "Lao Tzu" },
+            { content: "Believe you can and you're halfway there.", author: "Theodore Roosevelt" },
+            { content: "The only way to do great work is to love what you do.", author: "Steve Jobs" },
+            { content: "Success is not final, failure is not fatal: it is the courage to continue that counts.", author: "Winston Churchill" },
+            { content: "Your time is limited, don't waste it living someone else's life.", author: "Steve Jobs" },
+            { content: "The best time to plant a tree was 20 years ago. The second best time is now.", author: "Chinese Proverb" },
+            { content: "Be yourself; everyone else is already taken.", author: "Oscar Wilde" },
+            { content: "In the middle of difficulty lies opportunity.", author: "Albert Einstein" }
+        ];
+
+        let quoteInterval = null; // No need for currentQuoteIndex anymore
+
+        /**
+         * Gets a random quote from the QUOTES array.
+         */
+        function getRandomQuote() {
+            const randomIndex = Math.floor(Math.random() * QUOTES.length);
+            return QUOTES[randomIndex];
+        }
+
+        // --- Typewriter and Quote Rotation Logic ---
+
+        /**
+         * Simulates a typewriter effect by typing text character by character.
+         * @param {string} text - The text to type.
+         * @param {HTMLElement} element - The element to output the text to.
+         * @param {number} speed - Typing speed in ms per character.
+         * @param {function} callback - Function to execute when typing is complete.
+         */
+        function typeWriter(text, element, speed = 40, callback = () => { }) {
+            let i = 0;
+            element.textContent = ''; // Clear existing text
+
+            function type() {
+                if (i < text.length) {
+                    element.textContent += text.charAt(i);
+                    i++;
+                    setTimeout(type, speed);
+                } else {
+                    callback();
+                }
+            }
+            type();
+        }
+
+        /**
+         * Displays the next quote with the typewriter effect and manages the author fade-in.
+         */
+        function displayNextQuote() {
+            // Reset author visibility and content
+            quoteAuthorEl.style.opacity = '0';
+            quoteAuthorEl.textContent = '';
+
+            // Use the new random function
+            const quote = getRandomQuote();
+
+            // 1. Type out the quote content
+            typeWriter(`"${quote.content}"`, quoteTextEl, 40, () => {
+                // 2. Once quote is typed, set and fade in the author
+                quoteAuthorEl.textContent = `- ${quote.author}`;
+                quoteAuthorEl.style.transition = 'opacity 0.5s ease-in 0.5s';
+                quoteAuthorEl.style.opacity = '1';
+            });
+        }
+
+        /**
+         * Starts the 10-second rotation for local quotes.
+         */
+        function startQuoteRotation() {
+            // Clear any existing interval
+            if (quoteInterval) clearInterval(quoteInterval);
+
+            // Display the first quote immediately
+            displayNextQuote();
+
+            // Start the interval for subsequent quotes (10 seconds as requested)
+            quoteInterval = setInterval(displayNextQuote, 10000);
+        }
+
+        /**
+         * Stops the quote rotation.
+         */
+        function stopQuoteRotation() {
+            if (quoteInterval) {
+                clearInterval(quoteInterval);
+                quoteInterval = null;
+                // Optionally clear text and author when stopping
+                quoteTextEl.textContent = 'Click Namaste to start the quotes...';
+                quoteAuthorEl.textContent = '';
+                quoteAuthorEl.style.opacity = '0';
+            }
+        }
+
 
         // --- Greeting Animation Logic ---
 
@@ -334,7 +493,7 @@
          * Toggles the 'shrunk' class to smoothly move the greeting, time, and date elements.
          */
         function animateGreetingAndTime() {
-            // Determine if we are starting the shrinking animation
+            // Determine if we are starting the shrinking animation (showing the quotes)
             const isShrinking = !greetingTextEl.classList.contains('shrunk');
 
             // Toggle classes for Namaste, Time, and English Dates (standard toggle)
@@ -344,34 +503,45 @@
             englishWeekdayEl.classList.toggle('shrunk');
 
             if (isShrinking) {
-                // START SHRINKING (Forward Animation): 
-                // Moves out (animated), snaps to bottom, moves in (animated).
+                // START SHRINKING (Forward Animation)
 
-                // 1. Remove the reverse class (in case it was partially run)
+                // 1. Start the quote rotation
+                startQuoteRotation();
+
+                // 2. Make the quote container visible immediately (still transparent)
+                quoteContainerEl.classList.remove('hidden');
+
+                // 3. Start fade-in transition after a slight delay
+                setTimeout(() => {
+                    quoteContainerEl.classList.add('visible');
+                }, 50);
+
+                // 4. Nepali date sequence
                 nepaliDateEl.classList.remove('shrunk-reverse');
-
-                // 2. Start the forward sequence
                 nepaliDateEl.classList.add('shrunk-sequence');
-
-                // 3. Clear inline styles applied by 'forwards' from the previous animation cycle
                 nepaliDateEl.style.transform = '';
                 nepaliDateEl.style.opacity = '';
+
             } else {
-                // START EXPANDING (Reverse Animation): 
-                // Moves smoothly from the bottom position back to the top position.
+                // START EXPANDING (Reverse Animation)
 
-                // 1. Stop the forward sequence
+                // 1. Stop the quote rotation
+                stopQuoteRotation();
+
+                // 2. Start fade-out immediately
+                quoteContainerEl.classList.remove('visible');
+
+                // 3. After the fade-out duration (0.5s), hide it from the document flow
+                setTimeout(() => {
+                    quoteContainerEl.classList.add('hidden');
+                }, 550);
+
+                // 4. Nepali date sequence
                 nepaliDateEl.classList.remove('shrunk-sequence');
-
-                // 2. Start the reverse animation (shrunk-reverse)
                 nepaliDateEl.classList.add('shrunk-reverse');
 
-                // We add an event listener to clean up the class after the reverse animation is done.
-                // This prevents the 'animation-fill-mode: forwards' style from interfering with the next click.
                 nepaliDateEl.addEventListener('animationend', function handler(e) {
                     if (e.animationName === 'nepali-date-reverse') {
-                        // Crucially, remove the class AND the inline styles applied by 'forwards'
-                        // This prepares the element for the next 'shrunk-sequence' click (forward animation)
                         nepaliDateEl.classList.remove('shrunk-reverse');
                         nepaliDateEl.style.transform = 'translateY(0)'; // Explicitly reset to original position
                         nepaliDateEl.style.opacity = '1';
@@ -381,7 +551,7 @@
             }
         }
 
-        // --- Author Slide Animation Logic (remains unchanged) ---
+        // --- Author Slide Animation Logic (No change) ---
         function slideAwayAuthor() {
             if (authorCreditEl.classList.contains('slide-moved')) {
                 // State 2: Move back
@@ -408,7 +578,7 @@
             }
         }
 
-        // --- Clock and Date Logic (remains unchanged) ---
+        // --- Clock and Date Logic (No change) ---
 
         /**
          * Converts the 24-hour format time components to a 12-hour formatted string.
@@ -467,7 +637,7 @@
             }
         }
 
-        // --- Initialization ---
+        // --- Initialization (No change) ---
 
         window.onload = function () {
             // Call functions immediately to load data
