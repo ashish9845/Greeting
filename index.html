@@ -1,0 +1,488 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Greetings</title>
+    <!-- Load Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- Load Dancing Script, Inter, and Tangerine fonts from Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@400..700&family=Inter:wght@400;700&family=Tangerine:wght@400;700&display=swap"
+        rel="stylesheet">
+
+    <!-- Load Nepali Date Converter Library -->
+    <script src="https://cdn.jsdelivr.net/npm/nepali-date-converter@3.3.1/dist/nepali-date-converter.umd.js">
+    </script>
+
+    <style>
+        /* Apply custom background, text color, and Inter font for general text */
+        body {
+            background-color: #1C1B1F;
+            color: #E6E1E5;
+            font-family: 'Inter', sans-serif;
+        }
+
+        /* Custom style applied specifically to the greeting H1 */
+        #greeting-text {
+            /* Set the main greeting font and shadow */
+            font-family: 'Tangerine', serif;
+            text-shadow: 4px 4px 4px #aaa;
+            cursor: pointer;
+            display: inline-block;
+            padding: 0 0.5rem;
+            /* Added transition for smooth move effect */
+            transition: transform 1s ease-in-out;
+        }
+
+        /* Custom style applied specifically to the time display */
+        #time {
+            /* Updated transition to include font-size */
+            transition: transform 1s ease-in-out, font-size 1s ease-in-out;
+        }
+
+        /* --- STATE CLASS: Shrunk and Moved --- */
+
+        /* When 'shrunk' class is applied to Namaste: move up by 150px, NO scaling */
+        #greeting-text.shrunk {
+            /* This translation is relative to its new starting position near the top */
+            transform: translateY(-150px);
+        }
+
+        /* When 'shrunk' class is applied to Time: move to the bottom center, NO scaling */
+        #time.shrunk {
+            /* Final position for time (30vh down from center) */
+            transform: translateY(30vh);
+            /* New: Reduce font size to roughly half (2rem = 32px) */
+            font-size: 2rem;
+        }
+
+        /* English dates slide out/up and fade */
+        #english-date,
+        #english-weekday {
+            /* Apply transition to both transform and opacity */
+            transition: transform 1s ease-in-out, opacity 0.5s ease-out 0.5s;
+        }
+
+        #english-date.shrunk,
+        #english-weekday.shrunk {
+            /* Move straight up out of the page and hide */
+            transform: translateY(-100vh);
+            opacity: 0;
+        }
+
+        /* --- NEPALI DATE SEQUENTIAL ANIMATION (FORWARD: Out-Snap-In) --- */
+
+        /* Keyframes for the two-stage movement: 
+           1. Moves up and out (0% to 10%) - Animated Exit
+           2. Instantly snaps to bottom (11%) - Instant Jump
+           3. Moves from bottom to final spot (12% to 100%) - Animated Arrival */
+        @keyframes nepali-date-sequence {
+            0% {
+                transform: translateY(0);
+                opacity: 1;
+            }
+
+            /* Make the initial exit faster (0.2 seconds) */
+            10% {
+                transform: translateY(-100vh);
+                opacity: 0;
+            }
+
+            /* Instantly snap to bottom off-screen */
+            11% {
+                transform: translateY(100vh);
+                opacity: 0;
+            }
+
+            100% {
+                /* Final position: Now moved 70vh down from its original top position, placing it just above the time */
+                transform: translateY(70vh);
+                opacity: 1;
+            }
+        }
+
+        /* --- NEPALI DATE REVERSE ANIMATION (BACKWARD: Smooth Return) --- */
+        @keyframes nepali-date-reverse {
+            0% {
+                /* Start at the final 'shrunk' position (70vh down) */
+                transform: translateY(70vh);
+                opacity: 1;
+            }
+
+            100% {
+                /* End at the original top position (0vh down) */
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+
+        #nepali-date {
+            /* Remove default transition to let keyframes control movement */
+            transition: none;
+            /* Ensure it is centered within its parent container */
+            display: block;
+            margin: 0 auto;
+        }
+
+        #nepali-date.shrunk-sequence {
+            /* Total duration is 2s (1s for out, 1s for in) */
+            animation: nepali-date-sequence 2s ease-in-out forwards;
+        }
+
+        #nepali-date.shrunk-reverse {
+            /* Simple 1s smooth movement back to the top */
+            animation: nepali-date-reverse 1s ease-in-out forwards;
+        }
+
+
+        /* Class to apply the font only to the author text */
+        .author-rubik-fade {
+            font-family: 'Dancing Script', cursive;
+        }
+
+        /* --- Text Color Animation Styles (For Author Name) --- */
+
+        @keyframes waveColorShift {
+            0% {
+                background-position: 0% 50%;
+            }
+
+            100% {
+                background-position: 400% 50%;
+            }
+        }
+
+        .author-color-animate {
+            background: linear-gradient(90deg, #4285F4, #EA4335, #FBBC04, #34A853, #4285F4);
+            background-size: 400% 100%;
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            animation: waveColorShift 8s linear infinite;
+        }
+
+        /* --- Icon Color Animation Keyframes (For Social Icons) --- */
+        @keyframes iconColorCycle {
+            0% {
+                color: #106AFF;
+            }
+
+            16% {
+                color: #FF0872;
+            }
+
+            32% {
+                color: #FFC908;
+            }
+
+            50% {
+                color: #9213FF;
+            }
+
+            66% {
+                color: #FFFCFB;
+            }
+
+            83% {
+                color: #2CD46B;
+            }
+
+            100% {
+                color: #106AFF;
+            }
+        }
+
+        /* --- Slide Animation Styles (Author Name) */
+
+        #author-credit {
+            transition: transform 1s ease-out;
+            cursor: pointer;
+        }
+
+        #social-icons {
+            transition: opacity 0.3s ease-in-out;
+        }
+
+        /* --- Icon Entrance Animation --- */
+        @keyframes slideInFromRight {
+            0% {
+                transform: translateX(30px);
+                opacity: 0;
+            }
+
+            100% {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        /* Base style for social icons (Uses direct color animation) */
+        .social-icon {
+            width: 28px;
+            height: 28px;
+            cursor: pointer;
+            color: #FFFCFB;
+            transition: none;
+        }
+
+        /* Apply animation and stagger delays when 'icon-visible' class is added to the container */
+        #social-icons.icon-visible .social-icon {
+            opacity: 0;
+        }
+
+        /* Icon 1 (Instagram) */
+        #social-icons.icon-visible a:nth-child(1) .social-icon {
+            animation: slideInFromRight 0.5s ease-out forwards, iconColorCycle 10s linear -1.6s infinite;
+        }
+
+        /* Icon 2 (Facebook) */
+        #social-icons.icon-visible a:nth-child(2) .social-icon {
+            animation: slideInFromRight 0.5s ease-out 0.1s forwards, iconColorCycle 10s linear 0s infinite;
+        }
+
+        /* Icon 3 (WhatsApp) */
+        #social-icons.icon-visible a:nth-child(3) .social-icon {
+            animation: slideInFromRight 0.5s ease-out 0.2s forwards, iconColorCycle 10s linear -8.3s infinite;
+        }
+
+        /* Make the container visible and clickable after the animation starts */
+        #social-icons.icon-visible {
+            opacity: 1;
+            pointer-events: auto;
+        }
+    </style>
+</head>
+
+<body class="h-screen w-full flex flex-col items-center justify-center relative overflow-hidden p-4">
+    <!-- Reverted: Added 'justify-center' back to center content vertically -->
+
+    <!-- Custom Text (Bottom Right) -->
+    <p id="author-credit" class="fixed bottom-6 right-4 text-3xl font-semibold author-color-animate author-rubik-fade"
+        onclick="slideAwayAuthor()">
+        Aashish Dahal
+    </p>
+
+    <!-- Social Media Icons Container - Initially Hidden -->
+    <div id="social-icons" class="fixed bottom-6 right-4 flex space-x-4 opacity-0 pointer-events-none">
+        <!-- Instagram Icon --><a href="https://www.instagram.com/_aashish_dahal/" target="_blank" title="Instagram">
+            <svg class="social-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path
+                    d="M7 2H17C20.866 2 22 3.134 22 7V17C22 20.866 20.866 22 17 22H7C3.134 22 2 20.866 2 17V7C2 3.134 3.134 2 7 2Z"
+                    stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                <path
+                    d="M12 16.5C14.4853 16.5 16.5 14.4853 16.5 12C16.5 9.51472 14.4853 7.5 12 7.5C9.51472 7.5 7.5 9.51472 7.5 12C7.5 14.4853 9.51472 16.5 12 16.5Z"
+                    stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                <path
+                    d="M17.5 6.5C17.7761 6.5 18 6.27614 18 6C18 5.72386 17.7761 5.5 17.5 5.5C17.2239 5.5 17 5.72386 17 6C17 6.27614 17.2239 6.5 17.5 6.5Z"
+                    fill="currentColor" stroke="none" />
+            </svg>
+        </a>
+
+        <!-- Facebook Icon --><a href="https://www.facebook.com/ashish.dahal.555186" target="_blank" title="Facebook">
+            <svg class="social-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path
+                    d="M17 2H14C12.6739 2 11.4021 2.52678 10.4645 3.46447C9.52678 4.40215 9 5.67392 9 7V10H6V14H9V22H13V14H16L17 10H13V7C13 6.73478 13.1054 6.48043 13.2929 6.29289C13.4804 6.10536 13.7348 6 14 6H17V2Z"
+                    stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+            </svg>
+        </a>
+
+        <!-- WhatsApp Icon --><a href="https://wa.me/9779865102989" target="_blank" title="WhatsApp">
+            <svg class="social-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path
+                    d="M12 2C6.47715 2 2 6.47715 2 12C2 13.974 2.551 15.829 3.551 17.433L2.5 21.5L6.5 20.449C8.171 21.449 10.026 22 12 22C17.5228 22 22 17.5228 22 12C22 6.47715 17.5228 2 12 2Z"
+                    stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                <path
+                    d="M15 14C15 15.1046 14.1046 16 13 16H11C9.89543 16 9 15.1046 9 14V10C9 8.89543 9.89543 8 11 8H13C14.1046 8 15 8.89543 15 10V14Z"
+                    stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
+            </svg>
+        </a>
+    </div>
+
+    <!-- Date Container (Upper Middle Center) -->
+    <div class="absolute top-8 left-1/2 transform -translate-x-1/2 text-center sm:top-12 px-4">
+        <p id="nepali-date" class="text-xl sm:text-2xl font-semibold"></p>
+        <p id="english-date" class="text-lg sm:text-xl font-medium opacity-80 mt-1"></p>
+        <p id="english-weekday" class="text-base sm:text-lg font-normal opacity-80 mt-1"></p>
+    </div>
+
+    <!-- Main Content (Center) -->
+    <main class="flex flex-col items-center justify-center text-center p-6 rounded-xl relative">
+        <!-- Reverted: Removed 'pt-24' and restored 'justify-center' -->
+        <h1 id="greeting-text" class="text-7xl sm:text-8xl font-bold" onclick="animateGreetingAndTime()">Namaste 🙏</h1>
+        <p id="time" class="text-5xl sm:text-6xl mt-6 tabular-nums tracking-wider font-mono font-semibold"></p>
+    </main>
+
+    <script>
+        // Get elements
+        const timeEl = document.getElementById('time');
+        const englishDateEl = document.getElementById('english-date');
+        const nepaliDateEl = document.getElementById('nepali-date');
+        const englishWeekdayEl = document.getElementById('english-weekday');
+        const greetingTextEl = document.getElementById('greeting-text'); // H1 element
+        const authorCreditEl = document.getElementById('author-credit'); // Author text element
+        const socialIconsEl = document.getElementById('social-icons'); // Social icons container
+
+        // --- Greeting Animation Logic ---
+
+        /**
+         * Toggles the 'shrunk' class to smoothly move the greeting, time, and date elements.
+         */
+        function animateGreetingAndTime() {
+            // Determine if we are starting the shrinking animation
+            const isShrinking = !greetingTextEl.classList.contains('shrunk');
+
+            // Toggle classes for Namaste, Time, and English Dates (standard toggle)
+            greetingTextEl.classList.toggle('shrunk');
+            timeEl.classList.toggle('shrunk');
+            englishDateEl.classList.toggle('shrunk');
+            englishWeekdayEl.classList.toggle('shrunk');
+
+            if (isShrinking) {
+                // START SHRINKING (Forward Animation): 
+                // Moves out (animated), snaps to bottom, moves in (animated).
+
+                // 1. Remove the reverse class (in case it was partially run)
+                nepaliDateEl.classList.remove('shrunk-reverse');
+
+                // 2. Start the forward sequence
+                nepaliDateEl.classList.add('shrunk-sequence');
+
+                // 3. Clear inline styles applied by 'forwards' from the previous animation cycle
+                nepaliDateEl.style.transform = '';
+                nepaliDateEl.style.opacity = '';
+            } else {
+                // START EXPANDING (Reverse Animation): 
+                // Moves smoothly from the bottom position back to the top position.
+
+                // 1. Stop the forward sequence
+                nepaliDateEl.classList.remove('shrunk-sequence');
+
+                // 2. Start the reverse animation (shrunk-reverse)
+                nepaliDateEl.classList.add('shrunk-reverse');
+
+                // We add an event listener to clean up the class after the reverse animation is done.
+                // This prevents the 'animation-fill-mode: forwards' style from interfering with the next click.
+                nepaliDateEl.addEventListener('animationend', function handler(e) {
+                    if (e.animationName === 'nepali-date-reverse') {
+                        // Crucially, remove the class AND the inline styles applied by 'forwards'
+                        // This prepares the element for the next 'shrunk-sequence' click (forward animation)
+                        nepaliDateEl.classList.remove('shrunk-reverse');
+                        nepaliDateEl.style.transform = 'translateY(0)'; // Explicitly reset to original position
+                        nepaliDateEl.style.opacity = '1';
+                        nepaliDateEl.removeEventListener('animationend', handler);
+                    }
+                });
+            }
+        }
+
+        // --- Author Slide Animation Logic (remains unchanged) ---
+        function slideAwayAuthor() {
+            if (authorCreditEl.classList.contains('slide-moved')) {
+                // State 2: Move back
+                socialIconsEl.classList.remove('icon-visible');
+                socialIconsEl.style.pointerEvents = 'none';
+                authorCreditEl.style.transform = '';
+                authorCreditEl.classList.remove('slide-moved');
+            } else {
+                // State 1: Move to the left corner and reveal icons
+                const currentRightPosition = authorCreditEl.getBoundingClientRect().right;
+                const elementWidth = authorCreditEl.offsetWidth;
+                const targetLeftPosition = 16;
+                const currentLeftPosition = currentRightPosition - elementWidth;
+                const dx = targetLeftPosition - currentLeftPosition;
+
+                authorCreditEl.style.transform = `translateX(${dx}px)`;
+                authorCreditEl.classList.add('slide-moved');
+
+                // Start the timer to show the social icons halfway through the slide
+                setTimeout(() => {
+                    socialIconsEl.classList.add('icon-visible');
+                    socialIconsEl.style.pointerEvents = 'auto'; // Enable clicks for icons
+                }, 500);
+            }
+        }
+
+        // --- Clock and Date Logic (remains unchanged) ---
+
+        /**
+         * Converts the 24-hour format time components to a 12-hour formatted string.
+         */
+        function formatTime(now) {
+            let hours = now.getHours();
+            const minutes = String(now.getMinutes()).padStart(2, '0');
+            const seconds = String(now.getSeconds()).padStart(2, '0');
+            const ampm = hours >= 12 ? 'PM' : 'AM';
+
+            hours = hours % 12;
+            hours = hours ? hours : 12; // The hour '0' should be '12'
+
+            const hoursStr = String(hours).padStart(2, '0');
+
+            return `${hoursStr}:${minutes}:${seconds} ${ampm}`;
+        }
+
+        // Function to update time
+        function updateTime() {
+            const now = new Date();
+            timeEl.textContent = formatTime(now);
+        }
+
+        // Function to update dates
+        function updateDates() {
+            const now = new Date();
+
+            // English Weekday
+            const weekdayOptions = {
+                weekday: 'long'
+            };
+            englishWeekdayEl.textContent = now.toLocaleDateString('en-US', weekdayOptions);
+
+
+            // English Date: Month, Day, Year.
+            const englishOptions = {
+                year: 'numeric',
+                month: 'short',
+                day: 'numeric'
+            };
+            englishDateEl.textContent = now.toLocaleDateString('en-US', englishOptions);
+
+            // Nepali Date
+            try {
+                if (typeof NepaliDate !== 'undefined') {
+                    const nd = new NepaliDate(now);
+                    const nepaliDateStr = nd.format('MMMM D, YYYY');
+                    nepaliDateEl.textContent = nepaliDateStr + ' B.S.';
+                } else {
+                    nepaliDateEl.textContent = "Nepali date converter not fully loaded.";
+                }
+            } catch (e) {
+                console.error("Error generating Nepali date:", e);
+                nepaliDateEl.textContent = "Could not load Nepali date.";
+            }
+        }
+
+        // --- Initialization ---
+
+        window.onload = function () {
+            // Call functions immediately to load data
+            updateTime();
+            updateDates();
+
+            // Set intervals
+            setInterval(updateTime, 1000);
+            setInterval(updateDates, 60000);
+        };
+
+        // Expose functions globally for HTML onclick
+        window.animateGreetingAndTime = animateGreetingAndTime;
+        window.slideAwayAuthor = slideAwayAuthor;
+    </script>
+</body>
+
+</html>
