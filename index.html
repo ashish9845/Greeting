@@ -322,6 +322,38 @@
 
 <body class="h-screen w-full flex flex-col items-center justify-center relative overflow-hidden p-4">
 
+    <!-- Experimental Website Pop-up (Intro Modal) -->
+    <!-- Initially hidden with 'hidden' and uses opacity/scale for smooth entrance/exit -->
+    <div id="intro-modal-overlay"
+        class="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50 transition-opacity duration-300 opacity-0 hidden">
+        <div id="intro-modal"
+            class="bg-[#2a2a2e] text-white p-6 rounded-xl shadow-2xl max-w-sm w-11/12 md:w-full relative transform scale-95 opacity-0 transition-all duration-300">
+            <!-- Close Button -->
+            <button id="close-modal-btn"
+                class="absolute top-2 right-4 text-gray-400 hover:text-white transition-colors text-3xl font-light leading-none">
+                &times;
+            </button>
+            <div class="flex flex-col items-center text-center">
+                <!-- Sparkle/Experiment Icon -->
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
+                    stroke="currentColor" class="w-12 h-12 text-[#FBBC04] mb-4">
+                    <path stroke-linecap="round" stroke-linejoin="round"
+                        d="M9.813 15.904 9 18.75l-.813-2.846a4.5 4.5 0 0 0-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 0 0 3.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 0 0 3.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 0 0-3.09 3.09ZM18.259 8.715h5.25" />
+                </svg>
+                <h2 class="text-3xl font-bold mb-3 text-[#4285F4]">Experimental Zone</h2>
+                <p class="text-gray-300 text-lg">
+                    <!-- UPDATED MESSAGE CONTENT AND BOLDING -->
+                    This is an <strong class="text-[#EA4335]">experimental website</strong> created purely for time
+                    pass. Expect some overlapping elements or misaligned content.
+                </p>
+                <p id="modal-countdown-text" class="text-sm mt-3 text-gray-500">
+                    <!-- ID for live countdown is here -->
+                    (Auto-closing in 10 seconds)
+                </p>
+            </div>
+        </div>
+    </div>
+
     <!-- Custom Text (Bottom Right) -->
     <p id="author-credit" class="fixed bottom-6 right-4 text-3xl font-semibold author-color-animate author-rubik-fade"
         onclick="slideAwayAuthor()">
@@ -404,7 +436,109 @@
         const quoteAuthorEl = document.getElementById('quote-author'); // Quote Author element
         const englishDateContainerEl = document.getElementById('english-date-container'); // NEW: English Date Container
 
-        // --- Quotes Data and State ---
+        // --- Intro Modal Constants and Elements ---
+        const MODAL_TIMEOUT_MS = 10000;
+        const introModalOverlayEl = document.getElementById('intro-modal-overlay');
+        const introModalEl = document.getElementById('intro-modal');
+        const closeModalBtn = document.getElementById('close-modal-btn');
+        // Element for the live countdown text
+        const modalCountdownTextEl = document.getElementById('modal-countdown-text');
+
+        // Global variable to track the countdown interval
+        let countdownIntervalId = null;
+
+
+        // --- Intro Modal Logic ---
+
+        /**
+         * Clears the countdown interval and resets the display text.
+         */
+        function stopCountdownAndResetText() {
+            if (countdownIntervalId) {
+                clearInterval(countdownIntervalId);
+                countdownIntervalId = null;
+            }
+            // Reset the text for next time (important if closed manually)
+            const seconds = MODAL_TIMEOUT_MS / 1000;
+            modalCountdownTextEl.textContent = `(Auto-closing in ${seconds} seconds)`;
+        }
+
+        /**
+         * Starts the live countdown display.
+         */
+        function startCountdown(totalSeconds) {
+            let secondsLeft = totalSeconds;
+            // Update display immediately (10)
+            modalCountdownTextEl.textContent = `(Auto-closing in ${secondsLeft} seconds)`;
+
+            countdownIntervalId = setInterval(() => {
+                secondsLeft--;
+                if (secondsLeft >= 0) {
+                    modalCountdownTextEl.textContent = `(Auto-closing in ${secondsLeft} seconds)`;
+                }
+                // The interval will be cleared by closeIntroModal when the timer runs out
+            }, 1000);
+        }
+
+        /**
+         * Closes the introductory modal.
+         */
+        function closeIntroModal() {
+            // 1. Clear the automatic close timer
+            const timerId = introModalOverlayEl.getAttribute('data-timer-id');
+            if (timerId) {
+                clearTimeout(parseInt(timerId));
+                introModalOverlayEl.removeAttribute('data-timer-id');
+            }
+
+            // 2. Clear the live countdown interval and reset the text
+            stopCountdownAndResetText();
+
+            // Start the reverse transition (fade and shrink)
+            introModalOverlayEl.style.opacity = '0';
+            introModalEl.classList.add('scale-95', 'opacity-0');
+
+            // Hide the overlay completely after transition completes
+            setTimeout(() => {
+                introModalOverlayEl.classList.add('hidden');
+            }, 300); // Duration matches CSS transition
+        }
+
+        /**
+         * Shows the introductory modal and sets the auto-close timer.
+         */
+        function showIntroModal() {
+            // Make the overlay visible (removing 'hidden') but start with opacity 0
+            introModalOverlayEl.classList.remove('hidden');
+
+            // Timeout to trigger the transition after the element is displayed
+            setTimeout(() => {
+                introModalOverlayEl.style.opacity = '1';
+                // Remove initial state classes to start the smooth entrance
+                introModalEl.classList.remove('scale-95', 'opacity-0');
+                // Start the countdown display
+                startCountdown(MODAL_TIMEOUT_MS / 1000);
+            }, 50);
+
+            // Set automatic close timer using the new 10-second constant
+            const autoCloseTimer = setTimeout(closeIntroModal, MODAL_TIMEOUT_MS);
+            // Store the timer ID to clear it if the user closes the modal manually
+            introModalOverlayEl.setAttribute('data-timer-id', autoCloseTimer);
+        }
+
+        /**
+         * Initializes the intro modal to show on every page load.
+         * Note: Removed localStorage check to make it appear every time.
+         */
+        function initializeIntroModal() {
+            showIntroModal();
+
+            // Attach event listener to the close button
+            closeModalBtn.addEventListener('click', closeIntroModal);
+        }
+
+
+        // --- Quotes Data and State (No change) ---
 
         // Pause time after typing completes (2.5 seconds)
         const QUOTE_PAUSE_TIME_MS = 2500;
@@ -439,7 +573,7 @@
             return QUOTES[randomIndex];
         }
 
-        // --- Typewriter and Quote Rotation Logic ---
+        // --- Typewriter and Quote Rotation Logic (No change) ---
 
         /**
          * Simulates a typewriter effect by typing text character by character.
@@ -529,7 +663,7 @@
         }
 
 
-        // --- Greeting Animation Logic ---
+        // --- Greeting Animation Logic (No change) ---
 
         /**
          * Toggles the 'shrunk' class to smoothly move the greeting, time, and date elements.
@@ -595,7 +729,7 @@
             }
         }
 
-        // --- Clock and Date Logic ---
+        // --- Clock and Date Logic (No change) ---
 
         /**
          * Converts the 24-hour format time components to a 12-hour formatted string.
@@ -687,10 +821,10 @@
             document.addEventListener('visibilitychange', handleVisibilityChange);
         }
 
-        // --- Console Logging Function ---
+        // --- Console Logging Function (No change) ---
 
-        // The time this file was last edited (2025/11/13, 8:43 PM)
-        const LAST_UPDATED_TIMESTAMP_STRING = "2025-11-13T20:43:00";
+        // The time this file was last edited (2025/11/13, 9:48 PM)
+        const LAST_UPDATED_TIMESTAMP_STRING = "2025-11-13T21:48:00";
 
         /**
          * Logs the last updated timestamp to the console in the format YYYY/MM/DD-HH:MM AM/PM.
@@ -724,6 +858,9 @@
         // --- Initialization ---
 
         window.onload = function () {
+            // Initialize and manage the one-time introductory modal
+            initializeIntroModal();
+
             // Start the clock and date intervals
             startClockAndDates();
 
