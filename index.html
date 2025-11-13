@@ -540,8 +540,8 @@
 
         // --- Quotes Data and State (No change) ---
 
-        // Pause time after typing completes (2.5 seconds)
-        const QUOTE_PAUSE_TIME_MS = 2500;
+        // Pause time after typing completes (5 seconds)
+        const QUOTE_PAUSE_TIME_MS = 5000;
 
         const QUOTES = [
             { content: "The journey of a thousand miles begins with one step.", author: "Lao Tzu" },
@@ -627,7 +627,7 @@
                 quoteAuthorEl.style.transition = 'opacity 0.5s ease-in 0.5s';
                 quoteAuthorEl.style.opacity = '1';
 
-                // 3. Schedule the next quote after the pause time (2.5 seconds)
+                // 3. Schedule the next quote after the pause time (5 seconds)
                 quoteInterval = setTimeout(displayNextQuote, QUOTE_PAUSE_TIME_MS);
             });
         }
